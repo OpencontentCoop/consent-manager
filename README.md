@@ -122,7 +122,7 @@ Request:
 Response:
 
 ```json
-404 OK
+404 Not Found 
 {
   "title": "Not found",
   "detail": "The specified resource is not found",
