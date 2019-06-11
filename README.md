@@ -21,10 +21,12 @@ This service is an API that allow you to store proof of consent and manage
 | `created_at`		| Timestamp of the request in ISO8601 format |
 | `subject`		| A list of fields saved form the source page |
 | `source_url`		| The page performing the request |
-| `legal_docs`		| List of documents subscribed by the user: for each document identified by the _short_name_ the object contains the full text of the document and the version. If not specified, version is set to 1. |
+| `legal_docs`		| List of documents subscribed by the user: for each document identified by the _shortname_ the object contains the full text of the document and the version. If not specified, version is set to 1. 
 
 
 ## Consent API
+
+In order to send data to the Json API, the Content-Type header must be set to `application/json`.
 
 This REST API includes the following endpoints:
 
@@ -195,6 +197,10 @@ If not specified the version number is automatically generated with the followin
 ### Dockerize the project
 
 Create a [docker image](https://docs.docker.com/get-started/part2/) of the project and allow the configuration of the API using environment variables.
+
+### Rate-limits
+
+Implement a rate-limiting policy: a client can perform a maximum of 5 requests per second and 10800 requests per hour. Server-side, the API will respond with `429 Too Many Requests` if these limits are exceeded.
 
 ## Other documentation
 
