@@ -15,10 +15,24 @@ router.use(bodyParser.json());
 router.route('/')
 // listConsents: list consents registered
     .get(function (req, res) {
+        // https://www.npmjs.com/package/mongoose-paginate-v2
+        var query = {};
+        var options = {
+            sort: {created_at: 1},
+            limit: req.query.limit == null ? 1 : req.query.limit,
+            page: req.query.page == null ? 1 : req.query.page,
+            customLabels: {
+                docs: 'results',
+                limit: 'perPage',
+                page: 'currentPage',
+                nextPage: 'next',
+                prevPage: 'prev',
+            }
+        };
         models.Consents
-            .find({})
-            .then(function (consents) {
-                response(res, consents, 200);
+            .paginate(query, options)
+            .then(function (results) {
+                response(res, results, 200);
             })
             .catch(function (err) {
                 response(res, err, 500);

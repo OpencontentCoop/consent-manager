@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 require('mongoose-type-url');
 const uuid = require('node-uuid');
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 // Schema definition for document object
 const documentSchema = new Schema({
@@ -71,6 +72,8 @@ const consentSchema = new Schema({
     }
 
 });
+consentSchema.plugin(mongoosePaginate);
+//consentSchema.plugin(MongoPaging.mongoosePlugin);
 
 const Consents = mongoose.model('Consent', consentSchema);
 const Documents = mongoose.model('Documents', documentSchema);
