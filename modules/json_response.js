@@ -8,7 +8,7 @@ module.exports = function (res, instance, statusCode) {
             title = "OK";
             break;
         case 201:
-            detail = "Created";
+            title = "Created";
             break;
         case 400:
             title = "Bad Request";
@@ -26,9 +26,9 @@ module.exports = function (res, instance, statusCode) {
             throw Error("Invalid status code");
     }
 
-    //Enabling CORS
+    // Enabling CORS
     res.header('Access-Control-Allow-Origin', '*');
-    //Support header x-access-token for the authentication token
+    // Support header x-access-token for the authentication token
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, x-access-token, Authorization');
     res.header('Content-Type', 'application/json');
 

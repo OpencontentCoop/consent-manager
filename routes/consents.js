@@ -1,45 +1,37 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const models = require('../models/consents');
 var response = require('../modules/json_response');
+var isValid = require('../modules/is_valid');
 
+const models = require('../models/consents');
 
 const router = express.Router();
 
-
 router.use(bodyParser.json());
-
-//TODO: fix responses
 
 router.route('/')
 // listConsents: list consents registered
     .get(function (req, res) {
-        // https://www.npmjs.com/package/mongoose-paginate-v2
-        var query = {};
-        var options = {
-            sort: {created_at: 1},
-            limit: req.query.limit == null ? 1 : req.query.limit,
-            page: req.query.page == null ? 1 : req.query.page,
-            customLabels: {
-                docs: 'results',
-                limit: 'perPage',
-                page: 'currentPage',
-                nextPage: 'next',
-                prevPage: 'prev',
-            }
-        };
-        models.Consents
-            .paginate(query, options)
-            .then(function (results) {
-                response(res, results, 200);
-            })
-            .catch(function (err) {
-                response(res, err, 500);
-            })
+        // https://www.npmjs.com/package/mongo-cursor-pagination
+        models.Consents.paginate({
+            limit: Number(req.query.limit),
+            next: req.query.next,
+            previous: req.query.previous
+        }).then(function (results) {
+            var new_results = [];
+            results.results.forEach(function (consent) {
+                new_results.push(models.Consents(consent));
+            });
+            results.results = new_results;
+            response(res, results, 200);
+        }).catch(function (err) {
+            // Invalid parameter
+            response(res, req.originalUrl, 400);
+        })
     })
     // createConsent: create a consent
-    .post(function (req, res) {
+    .post(isValid, function (req, res) {
         // Retrieve ip from request object
         var ip = ((req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||
             req.connection.remoteAddress ||
@@ -81,27 +73,27 @@ router.route('/')
                             response(res, consent, 201);
                         })
                         .catch(function (err) {
-                            response(res, err.message, 500);
+                            response(res, err.message, 400);
                         })
-
                 } else {
                     // Consent already exists, update or add new docs
                     req.body.legal_docs.forEach(function (legal_doc) {
                         var found = false;
                         var version = legal_doc.version;
+                        // Delete version to be sure to extract the right object
                         delete legal_doc.version;
                         var short_name = Object.keys(legal_doc).pop();
 
                         consent.legal_docs.forEach(function (old_legal_doc) {
+                            // Same short_name, but different content
                             if ((old_legal_doc.short_name === short_name) && (old_legal_doc.content !== legal_doc[short_name])) {
-                                // Update doc
+                                // Update document
                                 found = true;
                                 old_legal_doc.set({
                                     version: (version == null) ? old_legal_doc.version + 1 : version,
                                     short_name: short_name,
                                     content: legal_doc[short_name]
                                 });
-
                             } else if (old_legal_doc.short_name === short_name) {
                                 // Nothing to do
                                 found = true;
@@ -121,10 +113,10 @@ router.route('/')
                     consent
                         .save()
                         .then(function (consent) {
-                            response(res, consent, 201);
+                            response(res, consent, 200);
                         })
                         .catch(function (err) {
-                            response(res, err, 500);
+                            response(res, err, 400);
                         });
                 }
             })
@@ -142,9 +134,8 @@ router.route('/:id')
                 }
             })
             .catch(function (err) {
-                response(res, err, 500);
+                response(res, err, 400);
             })
     });
 
 module.exports = router;
-

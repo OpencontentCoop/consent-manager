@@ -23,30 +23,31 @@ connect.then(function () {
 
 // Rate limit
 // https://www.npmjs.com/package/express-rate-limit
-
 const limit_per_second = rateLimit({
     windowMs: 1000, // 1 second
-    max: 5, // limit each IP to 100 requests per windowMs
+    max: 5, // limit each IP to 5 requests per windowMs
     message: 'Too many requests, please try again later'
 });
 
 const limit_per_hour = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 10800, // limit each IP to 100 requests per windowMs
+    max: 10800, // limit each IP to 10800 requests per windowMs
     message: 'Too many requests, please try again later'
 });
 
-app.use('/consents/', limit_per_second);
-app.use('/consents/', limit_per_hour);
-
+if (process.env.NODE_ENV !== 'test') {
+    app.use('/consents/', limit_per_second);
+    app.use('/consents/', limit_per_hour);
+}
 
 // APIs
 var consents = require('./routes/consents');
 app.use('/consents', consents);
-
 
 app.set('port', (process.env.PORT || 8080));
 
 app.listen(app.get('port'), function () {
     console.log('Node app is running on port', app.get('port'));
 });
+
+module.exports = app; // for testing
