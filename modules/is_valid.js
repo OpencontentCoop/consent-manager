@@ -1,9 +1,9 @@
 const response = require('../modules/json_response');
+
 module.exports = function (req, res, next) {
-    try {
-        req.body.should.have.keys('subject', 'source_url', 'legal_docs');
+    if (req.body.subject && req.body.source_url && req.body.legal_docs) {
         next();
-    } catch (ex) {
+    } else {
         response(res, req.body, 400);
     }
 };

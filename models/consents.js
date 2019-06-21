@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 require('mongoose-type-url');
-const uuid = require('node-uuid');
+const uuid = require('uuid');
 const mongoPaging = require('mongo-cursor-pagination');
 
 // Schema definition for document object
