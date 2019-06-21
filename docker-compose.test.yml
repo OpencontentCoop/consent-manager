@@ -1,0 +1,10 @@
+version: "3.7"
+services:
+  app:
+    environment:
+      - NODE_ENV=test
+      - DB_URL=mongodb://mongo:27017/consents-test_db
+    command: npm test
+  mongo:
+    ports:
+      - "27017:27017"
