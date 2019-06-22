@@ -27,13 +27,11 @@ connect.then(function () {
 const limit_per_second = rateLimit({
     windowMs: 1000, // 1 second
     max: 5, // limit each IP to 5 requests per windowMs
-    message: 'Too many requests, please try again later'
 });
 
 const limit_per_hour = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
     max: 10800, // limit each IP to 10800 requests per windowMs
-    message: 'Too many requests, please try again later'
 });
 
 /* istanbul ignore next */
