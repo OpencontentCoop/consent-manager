@@ -1,0 +1,26 @@
+version: "3.7"
+services:
+  app:
+    restart: always
+    build: .
+    ports:
+      - "8080:8080"
+    links:
+      - mongo
+    networks:
+      - backend_network
+    environment:
+      - DB_URL=mongodb://mongo:27017/consents_db
+    command: npm start
+    volumes:
+      - .:/app/
+  mongo:
+    image: mongo
+    volumes:
+      - mongo:/data/consents_db
+    networks:
+      - backend_network
+volumes:
+  mongo:
+networks:
+  backend_network:

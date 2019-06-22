@@ -1,208 +1,384 @@
-# Consent-Manager
+# Consent Manager
 
 An opensource solution to track and manage user consent compliant with GDPR
 
 ## Service Definition
 
-This service is an API that allow you to store proof of consent and manage
+This service is an API that allow you to store and manage proof of consent
 
-## Services
+### Services
 
- * createConsent: create a consent
- * getConsent: retrieve a consent
- * listConsents: list consents registered
-
-## Consent definition
+ * createConsent: create a consent [`POST /consents`]
+ * getConsent: retrieve a consent [`GET /consents/{id}`]
+ * listConsents: retrieve the list consents registered [`GET /consents`]
+ 
+### Consent Definition
 
 | Field               	| Definition |
 | ---------------------	| ---------- |
-| `id`    	      	| [GUID](http://en.wikipedia.org/wiki/Globally_Unique_Identifier) |
-| `ip`			| The IP Address that performed the request. If available save the [X-Forwared-For](https://en.wikipedia.org/wiki/X-Forwarded-For) value |
-| `created_at`		| Timestamp of the request in ISO8601 format |
-| `subject`		| A list of fields saved form the source page |
-| `source_url`		| The page performing the request |
-| `legal_docs`		| List of documents subscribed by the user: for each document identified by the _shortname_ the object contains the full text of the document and the version. If not specified, version is set to 1. 
+| `id`    	      	    | [GUID](http://en.wikipedia.org/wiki/Globally_Unique_Identifier) |
+| `ip`			        | The IP Address that performed the request. If available save the [X-Forwared-For](https://en.wikipedia.org/wiki/X-Forwarded-For) value |
+| `created_at`		    | Timestamp of the request in ISO8601 format |
+| `subject`		        | A list of fields saved form the source page |
+| `source_url`		    | The page performing the request |
+| `legal_docs`		    | List of documents subscribed by the user: for each document identified by the _shortname_ the object contains the full text of the document and the version. If not specified, version is set to 1. 
 
+## Install
 
-## Consent API
+    docker-compose build
+    docker-compose up
 
-In order to send data to the Json API, the Content-Type header must be set to `application/json`.
+## Run tests
 
-This REST API includes the following endpoints:
+    docker-compose -f docker-compose.yml -f docker-compose.test.yml build
+    docker-compose -f docker-compose.yml -f docker-compose.test.yml up
+    
+## Run tests with coverage
 
-* getConsent
-```ruby
-    GET: /consents/{id}
-```
-* createConsent
-```ruby
-    POST: /consents
-```
-* listConsents
-```ruby
-    GET: /consents
-```
+    docker-compose -f docker-compose.yml -f docker-compose.test.yml build
+    docker-compose -f docker-compose.yml -f docker-compose.test.yml run app npm run test-with-coverage
 
-## Examples
+    
+# REST API
 
-### Create a new consent
+## Retrieve ALL Consents [`GET /consents]
 
-Register a consent:
+This service implements a [cursor-based](https://opensource.zalando.com/restful-api-guidelines/#pagination) pagination for the Consents retrieval.
 
-```ruby
-  POST: /consents
-  {
-    "subject": [ "email", "given_name", "tax_code" ],
-    "source_url": "http://mywebsite.com/privacy",
-    "legal_docs": [ 
-      { 
-        "privacy_policy": "Privacy policy contents...",
-        "version": 1,
-      },
-      {  
-        "terms": "Terms of service....",
-        "version": 3,
-      }
-    ]
-  }
-```
+### Parameters
+
+* limit - limit of results to fetch. If not speficied the default limit is 50, maximum limit is 300
+* next - cursor to the next results
+* previous - cursor to the previous results
+
+Request :
+`GET /consents`
+
 Response:
 
-```json
-201 OK
-{
-  "id": "c1804da9-ab1c-45e2-8g7c-729822cffdaf",
-  "ip": "131.145.11.128",
-  "created_at": "2019-02-20T09:35:00Z",
-  "subject": [ "email", "given_name", "tax_code" ],
-  "source_url": "http://mywebsite.com/privacy",
-  "legal_docs": [ 
-    { 
-      "privacy_policy": "Privacy policy contents...",
-      "version": 1,
-    },
-    {  
-       "terms": "Terms of service....",
-       "version": 3,
+    200 OK (application/json)
+    
+    {
+        "results": [
+            {
+                "id": "e7bbfec8-ddfd-4c02-946e-72604ad73c17",
+                "ip": "192.254.1.23",
+                "created_at": "2019-06-22T13:03:55.669Z",
+                "subject": [
+                    "email",
+                    "given_name",
+                    "tax_code"
+                ],
+                "source_url": "http://mywebsite.com/privacy",
+                "legal_docs": [
+                    {
+                        "version": 1,
+                        "privacy_policy": "Privacy policy contents2..."
+                    },
+                    {
+                        "version": 3,
+                        "terms": "Terms of service...."
+                    }
+                ]
+            },
+            {
+                "id": "ace29b4f-fbd3-4ed2-98e3-c90a4741ec6d",
+                "ip": "1.1.1.1",
+                "created_at": "2019-06-22T13:04:33.173Z",
+                "subject": [
+                    "email",
+                    "given_name",
+                    "tax_code"
+                ],
+                "source_url": "http://mywebsite.com/privacy",
+                "legal_docs": [
+                    {
+                        "version": 1,
+                        "privacy_policy": "Privacy policy contents2..."
+                    },
+                    {
+                        "version": 3,
+                        "terms": "Terms of service...."
+                    }
+                ]
+            },
+            {
+                "id": "3eb2ed9b-6ba5-4902-9d4c-d7dd5dd16302",
+                "ip": "192.254.2.222",
+                "created_at": "2019-06-22T13:04:26.876Z",
+                "subject": [
+                    "email",
+                    "given_name",
+                    "tax_code"
+                ],
+                "source_url": "http://mywebsite.com/privacy",
+                "legal_docs": [
+                    {
+                        "version": 1,
+                        "privacy_policy": "Privacy policy contents2..."
+                    },
+                    {
+                        "version": 3,
+                        "terms": "Terms of service...."
+                    }
+                ]
+            }
+        ],
+        "previous": "ImU3YmJmZWM4LWRkZmQtNGMwMi05NDZlLTcyNjA0YWQ3M2MxNyI",
+        "hasPrevious": false,
+        "next": "IjNlYjJlZDliLTZiYTUtNDkwMi05ZDRjLWQ3ZGQ1ZGQxNjMwMiI",
+        "hasNext": false
+        
+Request:
+`GET /consents?limit=1`
+
+Response:
+
+    200 OK (application/json)
+    
+    {
+        "results": [
+            {
+                "id": "e7bbfec8-ddfd-4c02-946e-72604ad73c17",
+                "ip": "192.254.1.23",
+                "created_at": "2019-06-22T13:03:55.669Z",
+                "subject": [
+                    "email",
+                    "given_name",
+                    "tax_code"
+                ],
+                "source_url": "http://mywebsite.com/privacy",
+                "legal_docs": [
+                    {
+                        "version": 1,
+                        "privacy_policy": "Privacy policy contents2..."
+                    },
+                    {
+                        "version": 3,
+                        "terms": "Terms of service...."
+                    }
+                ]
+            }
+        ],
+        "previous": "ImU3YmJmZWM4LWRkZmQtNGMwMi05NDZlLTcyNjA0YWQ3M2MxNyI",
+        "hasPrevious": false,
+        "next": "ImU3YmJmZWM4LWRkZmQtNGMwMi05NDZlLTcyNjA0YWQ3M2MxNyI",
+        "hasNext": true
     }
-  ]
-}
-```
-
-### Retrieve a consent object
+    
 Request:
-```ruby
-  GET: /consents/c1804da9-ab1c-45e2-8g7c-729822cffdaf
-```
+`GET /consents?limit=1&next=ImU3YmJmZWM4LWRkZmQtNGMwMi05NDZlLTcyNjA0YWQ3M2MxNyI`
+
 Response:
 
-```json
-200 OK
-{
-  "id": "c1804da9-ab1c-45e2-8g7c-729822cffdaf",
-  "ip": "131.145.11.128",
-  "created_at": "2019-02-20T09:35:00Z",
-  "subject": [ "email", "given_name", "tax_code" ],
-  "source_url": "http://mywebsite.com/privacy",
-  "legal_docs": [ 
-    { 
-      "privacy_policy": "Privacy policy contents...",
-      "version": 1,
-    },
-    {  
-       "terms": "Terms of service....",
-       "version": 3,
+    200 OK (application/json)
+
+    {
+        "results": [
+            {
+                "id": "ace29b4f-fbd3-4ed2-98e3-c90a4741ec6d",
+                "ip": "1.1.1.1",
+                "created_at": "2019-06-22T13:04:33.173Z",
+                "subject": [
+                    "email",
+                    "given_name",
+                    "tax_code"
+                ],
+                "source_url": "http://mywebsite.com/privacy",
+                "legal_docs": [
+                    {
+                        "version": 1,
+                        "privacy_policy": "Privacy policy contents2..."
+                    },
+                    {
+                        "version": 3,
+                        "terms": "Terms of service...."
+                    }
+                ]
+            }
+        ],
+        "previous": "ImFjZTI5YjRmLWZiZDMtNGVkMi05OGUzLWM5MGE0NzQxZWM2ZCI",
+        "hasPrevious": true,
+        "next": "ImFjZTI5YjRmLWZiZDMtNGVkMi05OGUzLWM5MGE0NzQxZWM2ZCI",
+        "hasNext": true
     }
-  ]
-}
-```
+    
+Request:
+`GET /consents?previous=2`
+
+Response:
+    
+    400 Bad Request (application/json)
+    
+    {
+        "title": "Bad Request",
+        "detail": "Unexpected end of JSON input",
+        "status": 400,
+        "instance": "/consents?previous=2"
+    }
+
+    
+
+
+## Retrive ONE Consent [`GET /consents/{id}`]
+
+### Parameters
+* id - GUID of Consent to retrieve
 
 Request:
-```ruby
-  GET: /consents/1234
-```
+`GET /consents/e7bbfec8-ddfd-4c02-946e-72604ad73c17`
+
 Response:
 
-```json
-404 Not Found 
-{
-  "title": "Not found",
-  "detail": "The specified resource is not found",
-  "status": 404,
-  "instance": "/consents/1234",
-}
-
-```
-
-### Lists consents
+    200 OK (application/json)
+    
+    {
+        "id": "e7bbfec8-ddfd-4c02-946e-72604ad73c17",
+        "ip": "192.254.1.23",
+        "created_at": "2019-06-22T13:03:55.669Z",
+        "subject": [
+            "email",
+            "given_name",
+            "tax_code"
+        ],
+        "source_url": "http://mywebsite.com/privacy",
+        "legal_docs": [
+            {
+                "version": 1,
+                "privacy_policy": "Privacy policy contents2..."
+            },
+            {
+                "version": 3,
+                "terms": "Terms of service...."
+            }
+        ]
+    }
+    
 Request:
-```ruby
-  GET: /consents
-```
+`GET /consents/123`
+
+Response:
+    
+    404 Not Found (application/json)
+    
+    {
+        "title": "Not Found",
+        "detail": "The specified resource is not found",
+        "status": 404,
+        "instance": "/consents/123"
+    }
+    
+
+## Consent Creation [`POST /consents]
+
+Request: 
+`POST /consents`
+        
+    {
+      "subject": [ "email", "given_name", "tax_code" ],
+      "source_url": "http://mywebsite.com/privacy",
+      "legal_docs": [ 
+        { 
+          "privacy_policy": "Privacy policy contents2...",
+        },
+        {  
+          "terms": "Terms of service....",
+          "version": 3
+        }
+      ]
+    }  
+      
 Response:
 
-```json
-200 OK
-[
-  {
-    "id": "6414bbd8-2227-45d0-a888-9e43a5f202ae",
-    "ip": "131.145.11.128",
-    "created_at": "2019-02-20T09:35:00Z",
-    "subject": [ "email", "given_name", "tax_code" ],
-    "source_url": "http://mywebsite.com/privacy",
-    "legal_docs": [ 
-      { 
-        "privacy_policy": "Privacy policy contents...",
-        "version": 1,
-      },
-      {  
-        "terms": "Terms of service....",
-        "version": 3,
-      }
-    ]
-  },
-  {
-    "id": "acecb842-e60c-4ad8-b9d4-e881f75da0e6",
-    "ip": "93.41.234.251",
-    "created_at": "2019-05-10T14:53:29Z",
-    "subject": [ "email", "given_name", "tax_code" ],
-    "source_url": "http://mywebsite.com/privacy",
-    "legal_docs": [ 
-      { 
-        "privacy_policy": "Privacy policy contents...",
-        "version": 1,
-      },
-      {  
-        "terms": "Terms of service....",
-        "version": 3,
-      }
-    ]
-  }
-]
-```
+    201 Created (application/json)
+    
+    {
+        "id": "ace29b4f-fbd3-4ed2-98e3-c90a4741ec6d",
+        "ip": "1.1.1.1",
+        "created_at": "2019-06-22T13:04:33.173Z",
+        "subject": [
+            "email",
+            "given_name",
+            "tax_code"
+        ],
+        "source_url": "http://mywebsite.com/privacy",
+        "legal_docs": [
+            {
+                "version": 1,
+                "privacy_policy": "Privacy policy contents2..."
+            },
+            {
+                "version": 3,
+                "terms": "Terms of service...."
+            }
+        ]
+    }
+    
+Request:
+`POST /consents`
+    
+    {
+      "subject": [ "email", "given_name", "tax_code" ],
+      "source_url": "http://mywebsite.com/privacy"
+    }
 
-## Advanced topics
+Response:
 
-### Pagination
+    400 Bad Request (application/json)
+    
+    {
+        "title": "Bad Request",
+        "detail": "The body of the request is invalid",
+        "status": 400,
+        "instance": "/consents"
+    }
+    
+Request:
+`POST /consents`
+    
+    {
+        "subject": [ "email", "given_name", "tax_code" ],
+        "source_url": "http://mywebsite.com/privacy",
+        "legal_docs": [ 
+            { 
+                "version": 1
+            },
+            { 
+                "terms": "Terms of service....",
+                "version": 3
+            }
+        ]
+    }
+    
+Response:
 
-Implent a [cursor-based](https://opensource.zalando.com/restful-api-guidelines/#pagination) pagination for the API.
+    400 Bad Request (application/json)
+    {
+        "title": "Bad Request",
+        "detail": "Consent validation failed: legal_docs.2.short_name: Short name is a mandatory field, legal_docs.2.content: Document content is a mandatory field",
+        "status": 400,
+        "instance": "/consents"
+    }
 
-### Autoversioning of documents
+    
+Response failed IP Validation
+    
+    400 Bad Request (application/json)
+    
+    {
+        "title": "Bad Request",
+        "detail": "Consent validation failed: ip: 1.1.1.999 is not a valid ip",
+        "status": 400,
+        "instance": "/consents"
+    }
 
+## Rate Limiting policy
+
+A client can perform a maximum of 5 requests per second and 10800 requests per hour. Server-side, the API will respond with `429 Too Many Requests` if these limits are exceeded.
+
+## Autoversioning of Documents
 If not specified the version number is automatically generated with the following rules:
 
-1. if the document with that short_name has never been saved, add version value 1
-1. if the document has already been save with the same short_name and a different content, then increment the version number
+* if the document with that short_name has never been saved, version value is set to 1
+* if the document has already been save with the same short_name and a different content, then the version number is incremented by 1
 
-### Dockerize the project
-
-Create a [docker image](https://docs.docker.com/get-started/part2/) of the project and allow the configuration of the API using environment variables.
-
-### Rate-limits
-
-Implement a rate-limiting policy: a client can perform a maximum of 5 requests per second and 10800 requests per hour. Server-side, the API will respond with `429 Too Many Requests` if these limits are exceeded.
-
-## Other documentation
-
-* [Zalando ReSTful API Guide](https://opensource.zalando.com/restful-api-guidelines/#introduction)
-* [12factor app with docker](https://github.com/docker/labs/tree/master/12factor)
