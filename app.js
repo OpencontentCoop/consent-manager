@@ -18,6 +18,7 @@ const connect = mongoose.connect(url, {useNewUrlParser: true});
 connect.then(function () {
     console.log('Connected correctly to database');
 }, function (err) {
+    /* istanbul ignore next */
     console.log(err);
 });
 
@@ -35,7 +36,8 @@ const limit_per_hour = rateLimit({
     message: 'Too many requests, please try again later'
 });
 
-if (process.env.NODE_ENV !== 'test') {
+/* istanbul ignore next */
+if (!process.env.TEST) {
     app.use('/consents/', limit_per_second);
     app.use('/consents/', limit_per_hour);
 }

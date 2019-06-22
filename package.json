@@ -4,8 +4,8 @@
   "description": "An opensource solution to track and manage user consent compliant with GDPR",
   "main": "app.js",
   "scripts": {
-    "test": "mocha test/database.test.js test/post.consent.test.js test/get.consent.test.js test/get.consents.test.js",
-    "test-with-coverage": "nyc --reporter=text mocha test/post.consent.test.js test/get.consent.test.js test/get.consents.test.js",
+    "test": "mocha test/database.test.js test/post.consent.test.js test/get.consent.test.js test/get.consents.test.js --exit",
+    "test-with-coverage": "nyc mocha test/database.test.js test/post.consent.test.js test/get.consent.test.js test/get.consents.test.js --exit",
     "start": "node app.js"
   },
   "repository": {

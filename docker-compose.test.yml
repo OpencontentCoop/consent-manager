@@ -1,8 +1,9 @@
 version: "3.7"
 services:
   app:
+    restart: "no"
     environment:
-      - NODE_ENV=test
+      - TEST=true
       - DB_URL=mongodb://mongo:27017/consents-test_db
     command: npm test
   mongo:

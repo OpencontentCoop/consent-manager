@@ -6,8 +6,8 @@ const should = chai.should();
 
 chai.use(chaiHttp);
 
-// test GET /consents/{id} route
-describe('/GET CONSENT', function () {
+// test POST /consents route
+describe('/POST CONSENT', function () {
     // Success consent creation with client ip
     it('Should create a new consent', function (done) {
 
@@ -97,6 +97,77 @@ describe('/GET CONSENT', function () {
                 done();
             });
     });
+    // Invalid doc of existing Consent
+    it('Should be a bar request for invalid document of existing Consent', function (done) {
+        chai.request(app)
+            .post('/consents')
+            .set('x-forwarded-for', '1.1.1.1')
+            .send({
+                "subject": ["email", "given_name", "tax_code"],
+                "source_url": "http://mywebsite.com/privacy",
+                "legal_docs": [
+                    {
+                        "privacy_policy": "Privacy policy contents...",
+                        "version": 1
+                    },
+                    {
+                        "terms": "Terms of service....",
+                        "version": 3
+                    },
+                    {
+                        "version": 7
+                    }
+                ]
+            })
+            .end(function (err, res) {
+                res.should.have.status(400);
+                res.should.be.json;
+                res.body.should.be.a('object');
+                res.body.should.have.property('title');
+                res.body.should.have.property('detail');
+                res.body.should.have.property('status');
+                res.body.should.have.property('instance');
+                res.body.title.should.equal('Bad Request');
+                res.body.detail.should.equal('Consent validation failed: ' +
+                    'legal_docs.2.short_name: Short name is a mandatory field, ' +
+                    'legal_docs.2.content: Document content is a mandatory field');
+                res.body.status.should.equal(400);
+                res.body.instance.should.equal('/consents');
+                done();
+            });
+    });
+
+    // Invalid doc of new Consent
+    it('Should be a bar request for invalid document of new Consent', function (done) {
+        chai.request(app)
+            .post('/consents')
+            .set('x-forwarded-for', '1.1.1.2')
+            .send({
+                "subject": ["email", "given_name", "tax_code"],
+                "source_url": "http://mywebsite.com/privacy",
+                "legal_docs": [
+                    {
+                        "version": 1
+                    }
+                ]
+            })
+            .end(function (err, res) {
+                res.should.have.status(400);
+                res.should.be.json;
+                res.body.should.be.a('object');
+                res.body.should.have.property('title');
+                res.body.should.have.property('detail');
+                res.body.should.have.property('status');
+                res.body.should.have.property('instance');
+                res.body.title.should.equal('Bad Request');
+                res.body.detail.should.equal('Consent validation failed: ' +
+                    'legal_docs.0.short_name: Short name is a mandatory field, ' +
+                    'legal_docs.0.content: Document content is a mandatory field');
+                res.body.status.should.equal(400);
+                res.body.instance.should.equal('/consents');
+                done();
+            });
+    });
     // Ip validation error
     it('Should be an ip validation error', function (done) {
         chai.request(app)
@@ -125,9 +196,9 @@ describe('/GET CONSENT', function () {
                 res.body.should.have.property('status');
                 res.body.should.have.property('instance');
                 res.body.title.should.equal('Bad Request');
-                res.body.detail.should.equal('Invalid request');
+                res.body.detail.should.equal('Consent validation failed: ip: 1.1.1.999 is not a valid ip');
                 res.body.status.should.equal(400);
-                res.body.instance.should.equal('Consent validation failed: ip: 1.1.1.999 is not a valid ip');
+                res.body.instance.should.equal('/consents');
                 done();
             });
     });
@@ -237,8 +308,8 @@ describe('/GET CONSENT', function () {
                         "version": 1
                     },
                     {
-                        "terms": "Terms of service....",
-                        "version": 3
+                        "terms": "Terms of service2....",
+                        "version": 4
                     },
                     {
                         "test": "Test contents 2....",
@@ -263,8 +334,8 @@ describe('/GET CONSENT', function () {
                         "version": 1
                     },
                     {
-                        "terms": "Terms of service....",
-                        "version": 3
+                        "terms": "Terms of service2....",
+                        "version": 4
                     },
                     {
                         "test": "Test contents 2....",
@@ -290,9 +361,9 @@ describe('/GET CONSENT', function () {
                 res.body.should.have.property('status');
                 res.body.should.have.property('instance');
                 res.body.title.should.equal('Bad Request');
-                res.body.detail.should.equal('Invalid request');
+                res.body.detail.should.equal('The body of the request is invalid');
                 res.body.status.should.equal(400);
-                res.body.instance.should.deep.equal({"subject": ["email", "given_name", "tax_code"]});
+                res.body.instance.should.equal('/consents');
                 done();
             });
     });

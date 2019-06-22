@@ -50,7 +50,7 @@ describe('/GET CONSENTS', function () {
                 res.body.should.have.property('status');
                 res.body.should.have.property('instance');
                 res.body.title.should.equal('Bad Request');
-                res.body.detail.should.equal('Invalid request');
+                res.body.detail.should.equal('Unexpected end of JSON input');
                 res.body.status.should.equal(400);
                 res.body.instance.should.equal('/consents?next=1');
                 done();

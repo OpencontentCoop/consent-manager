@@ -24,19 +24,16 @@ router.route('/')
                 new_results.push(models.Consents(consent));
             });
             results.results = new_results;
-            response(res, results, 200);
+            response(res, 'OK', results, 200);
         }).catch(function (err) {
             // Invalid parameter
-            response(res, req.originalUrl, 400);
+            response(res, err.message, req.originalUrl, 400);
         })
     })
     // createConsent: create a consent
     .post(isValid, function (req, res) {
         // Retrieve ip from request object
-        var ip = ((req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||
-            req.connection.remoteAddress ||
-            req.socket.remoteAddress ||
-            req.connection.socket.remoteAddress);
+        var ip = ((req.headers['x-forwarded-for'] || '').split(',').pop().trim() || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress);
 
         // Check if consent already exists
         models.Consents
@@ -70,10 +67,10 @@ router.route('/')
                     new_consent
                         .save()
                         .then(function (consent) {
-                            response(res, consent, 201);
+                            response(res, 'Created', consent, 201);
                         })
                         .catch(function (err) {
-                            response(res, err.message, 400);
+                            response(res, err.message, req.originalUrl, 400);
                         })
                 } else {
                     // Consent already exists, update or add new docs
@@ -113,10 +110,10 @@ router.route('/')
                     consent
                         .save()
                         .then(function (consent) {
-                            response(res, consent, 200);
+                            response(res, 'OK', consent, 200);
                         })
                         .catch(function (err) {
-                            response(res, err, 400);
+                            response(res, err.message, req.originalUrl, 400);
                         });
                 }
             })
@@ -128,13 +125,15 @@ router.route('/:id')
         models.Consents.findById(req.params.id)
             .then(function (consent) {
                 if (consent) {
-                    response(res, consent, 200);
+                    response(res, 'OK', consent, 200);
                 } else {
-                    response(res, req.originalUrl, 404);
+                    response(res, 'The specified resource is not found', req.originalUrl, 404);
                 }
             })
             .catch(function (err) {
-                response(res, err, 400);
+                // skip line for test coveragen (Query failed - Server Error)
+                /* istanbul ignore next */
+                response(res, err.message, req.originalUrl, 500);
             })
     });
 

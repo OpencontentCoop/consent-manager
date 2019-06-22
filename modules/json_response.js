@@ -1,7 +1,6 @@
-module.exports = function (res, instance, statusCode) {
+module.exports = function (res, detail, instance, statusCode) {
     statusCode = parseInt(statusCode, 10);
     var title = "";
-    var detail = "";
 
     switch (statusCode) {
         case 200:
@@ -12,16 +11,16 @@ module.exports = function (res, instance, statusCode) {
             break;
         case 400:
             title = "Bad Request";
-            detail = "Invalid request";
             break;
         case 404:
             title = "Not Found";
-            detail = "The specified resource is not found";
             break;
+        /* istanbul ignore next */
         case 500:
+            /* istanbul ignore next */
             title = "Internal Server Error";
-            detail = "Something went wrong";
             break;
+        /* istanbul ignore next */
         default:
             throw Error("Invalid status code");
     }

@@ -4,6 +4,6 @@ module.exports = function (req, res, next) {
     if (req.body.subject && req.body.source_url && req.body.legal_docs) {
         next();
     } else {
-        response(res, req.body, 400);
+        response(res, 'The body of the request is invalid', req.originalUrl, 400);
     }
 };
